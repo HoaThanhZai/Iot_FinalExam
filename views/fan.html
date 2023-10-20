@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        Data
+    </title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Sharp" rel="stylesheet" />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <link rel="stylesheet" href="./style_fan.css" />
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <h2>IOT</h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-symbols-sharp"> close </span>
+                </div>
+            </div>
+            <div class="sidebar">
+                <a href="./index.html" class="active">
+                    <span class="material-symbols-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="./profile.html" class="active">
+                    <span class="material-symbols-sharp"> person </span>
+                    <h3>Profile</h3>
+                </a>
+                <a href="./data.html" class="active">
+                    <span class="material-symbols-sharp"> demography </span>
+                    <h3>Sensor Data</h3>
+                </a>
+                <a href="./history.html" class="active">
+                    <span class="material-symbols-sharp"> demography </span>
+                    <h3>Led Data</h3>
+                </a>
+                <a href="#" class="active">
+                    <span class="material-symbols-sharp"> demography </span>
+                    <h3>Fan Data</h3>
+                </a>
+            </div>
+        </aside>
+        <main>
+            <h1>
+                Fan Data
+            </h1>
+            <div class="insights">
+                <div class="temperature">
+                    <div class="middle">
+                        <div class="search-container">
+                            <input type="text" id="searchStatus" placeholder="Status...">
+                            <button onclick="search()">Tìm Kiếm</button>
+                        </div>
+                        <div class="filter_time" id="filterTime">
+                            <input type="text" id="timeIn" placeholder="Thời gian bắt đầu...">
+                            <input type="text" id="timeOut" placeholder="Thời gian kết thúc...">
+                            <button onclick="filter()">Lọc</button>
+                        </div>
+                        <div class="left">
+                            <table border="1" id="data-table">
+                            </table>
+                            <div id="pagination">
+                                <button onclick="previousPage()">Previous</button>
+                                <button onclick="nextPage()">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchData();
+        });
+
+        //tìm kiếm
+        let data = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function fetchData() {
+            fetch('http://localhost:3000/allFanData')
+                .then(response => response.json())
+                .then(dataArray => {
+                    data = dataArray;
+                    search();
+                });
+        }
+
+        function displayData(results) {
+            const dataTable = document.getElementById('data-table');
+            dataTable.innerHTML = `
+            <tr>
+                <th>ID</th>
+                <th><button onclick="sortColumn('status')">Status</button></th>
+                <th><button onclick="sortColumn('timestamp')">Thời gian</button></th>
+            </tr>
+        `;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = currentPage * itemsPerPage;
+            const paginatedResults = results.slice(startIndex, endIndex);
+            paginatedResults.forEach(item => {
+                const row = document.createElement('tr');
+                var date = new Date(item.timestamp);
+                var thoiGian = date.toLocaleString();
+
+
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.status == 1 ? 'On' : 'Off'}</td>
+                    <td>${thoiGian}</td>
+                `;
+                dataTable.appendChild(row);
+            });
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = endIndex >= results.length;
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                search();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(data.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                search();
+            }
+        }
+
+        function search() {
+            const searchStatus = document.getElementById('searchStatus').value.toLowerCase();
+
+            const searchResults = data.filter(item => {
+                const status = item.status === 1 ? 'on' : 'off';
+                return status.includes(searchStatus);
+            });
+
+            displayData(searchResults);
+        }
+
+        function parseCustomDateTime(datetimeString) {
+            const parts = datetimeString.split(' ');
+            const time = parts[0];
+            const dateParts = parts[1].split('/');
+            const day = dateParts[0];
+            const month = dateParts[1];
+            const year = dateParts[2];
+
+            return new Date(`${year}-${month}-${day}T${time}`);
+        }
+
+        function filter() {
+            const timeIn = document.getElementById('timeIn').value;
+            const timeOut = document.getElementById('timeOut').value;
+
+            const startDate = parseCustomDateTime(timeIn);
+            const endDate = parseCustomDateTime(timeOut);
+
+            if (isNaN(startDate) || isNaN(endDate)) {
+                alert('Vui lòng nhập đúng định dạng thời gian (VD: 14:51:23 12/10/2023).');
+                return;
+            }
+
+            const filterResults = data.filter(item => {
+                const itemDate = new Date(item.timestamp);
+                return itemDate >= startDate && itemDate <= endDate;
+            });
+
+            displayData(filterResults);
+        }
+
+        let sortColumnState = {
+            id: 0,
+            status: 0,
+            timestamp: 0
+        };
+
+        function sortColumn(column) {
+            data.sort((a, b) => {
+                let order = sortColumnState[column];
+                let result = 0;
+                if (column === 'timestamp') {
+                    result = new Date(a[column]) - new Date(b[column]);
+                } else {
+                    result = a[column] - b[column];
+                }
+
+                if (order === 1) {
+                    return result;
+                } else {
+                    return -result;
+                }
+            });
+
+            // Chuyển đổi trạng thái sắp xếp
+            sortColumnState[column] = (sortColumnState[column] + 1) % 2;
+
+            currentPage = 1;
+            search();
+        }
+    </script>
+
+</body>
+
+</html>

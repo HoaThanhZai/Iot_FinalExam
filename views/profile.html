@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        Profile
+    </title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Sharp" rel="stylesheet" />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <link rel="stylesheet" href="./style_profile.css" />
+</head>
+
+<body>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <h2>IOT</h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-symbols-sharp"> close </span>
+                </div>
+            </div>
+            <div class="sidebar">
+                <a href="./index.html" class="active">
+                    <span class="material-symbols-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="#" class="active">
+                    <span class="material-symbols-sharp"> person </span>
+                    <h3>Profile</h3>
+                </a>
+                <a href="./data.html" class="active">
+                    <span class="material-symbols-sharp"> demography </span>
+                    <h3>Data</h3>
+                </a>
+                <a href="./history.html" class="active">
+                    <span class="material-symbols-sharp"> demography </span>
+                    <h3>Led Data</h3>
+                </a>
+                <a href="./fan.html" class="active">
+                    <span class="material-symbols-sharp"> demography </span>
+                    <h3>Fan Data</h3>
+                </a>
+            </div>
+        </aside>
+        <main>
+            <h1>
+                Profile
+            </h1>
+            <div class="insights">
+                <div class="temperature">
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Viên Đình Long</h3>
+                            <h1 id="temperature"></h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of temperature -->
+                <div class="humidity">
+                    <div class="middle">
+                        <div class="left">
+                            <h3>B20DCCN409</h3>
+                            <h1 id="humidity"></h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of humidity -->
+                <div class="pressure">
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Nhóm 7</h3>
+                            <h1 id="light"></h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of pressure -->
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
