@@ -1,1 +1,1 @@
-# Iot_FinalExam
+- Install the dependencies and run the project : npm install && node app.js
